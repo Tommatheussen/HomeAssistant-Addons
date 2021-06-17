@@ -14,7 +14,7 @@ FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Copy root filesystem
-COPY rootfs /
+# COPY rootfs /
 
 # Build arguments
 ARG BUILD_ARCH
