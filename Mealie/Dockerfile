@@ -1,14 +1,7 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base/amd64:9.2.0
 ###############################################################################
 # Get prebuild containers from Mealie
 ###############################################################################
-FROM "hkotel/mealie:v0.5.0" as mealie
-
-###############################################################################
-# Build the actual add-on.
-###############################################################################
-# hadolint ignore=DL3006
-FROM ${BUILD_FROM}
+FROM "hkotel/mealie:v0.5.0"
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
