@@ -1,0 +1,14 @@
+{
+  "name": "Mealie",
+  "version": "0.1",
+  "slug": "mealie",
+  "description": "Mealie addon!",
+  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "startup": "before",
+  "boot": "auto",
+  "options": {},
+  "schema": {},
+  "ports": {
+    "80/tcp": 9925
+  }
+}
