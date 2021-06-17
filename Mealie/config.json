@@ -1,6 +1,6 @@
 {
   "name": "Mealie",
-  "version": "0.1",
+  "version": "0.1.1",
   "slug": "mealie",
   "description": "Mealie addon!",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
