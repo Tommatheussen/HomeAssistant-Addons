@@ -4,6 +4,7 @@
   "slug": "mealie",
   "description": "Mealie addon for Home Assistant",
   "arch": ["aarch64", "amd64"],
+  "webui": "http://[HOST]:[PORT:80]",
   "boot": "auto",
   "options": {},
   "schema": {},
