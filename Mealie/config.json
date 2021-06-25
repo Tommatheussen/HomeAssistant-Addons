@@ -1,11 +1,10 @@
 {
   "name": "Mealie",
-  "version": "v0.5.2",
+  "version": "dev",
   "slug": "mealie",
   "description": "Mealie addon for Home Assistant",
-  "arch": ["aarch64", "amd64"],
+  "arch": ["amd64"],
   "webui": "http://[HOST]:[PORT:80]",
-  "boot": "auto",
   "options": {
     "envvars": []
   },
@@ -19,5 +18,8 @@
   },
   "ports": {
     "80/tcp": 9925
+  },
+  "ports_description": {
+    "80/tcp": "UI"
   }
 }
