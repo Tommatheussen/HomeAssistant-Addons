@@ -114,12 +114,12 @@ jobs:
     needs:
       - information
       - lint-addon
-      - lint-hadolint
+      # - lint-hadolint
       - lint-json
       - lint-markdown
       - lint-prettier
       - lint-shellcheck
-      - lint-yamllint
+      # - lint-yamllint
     runs-on: ubuntu-latest
     strategy:
       matrix:
