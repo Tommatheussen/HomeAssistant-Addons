@@ -1,5 +1,16 @@
 #!/usr/bin/with-contenv bashio
 
+bashio::log.debug "Linking persistent storage"
+
+mv /app/data /app/tmp_data
+mkdir -p /data/mealie
+ln -s /data/mealie /app/data
+
+# Move and override existing templates
+mv -f /app/tmp_data/templates/* /app/data/templates/
+
+rm -r /app/tmp_data
+
 for envvar in $(bashio::config 'envvars|keys'); do
     name=$(bashio::config "envvars[${envvar}].name")
     value=$(bashio::config "envvars[${envvar}].value")
@@ -7,13 +18,8 @@ for envvar in $(bashio::config 'envvars|keys'); do
     export "${name}=${value}"
 done
 
-# Run the Bitwarden server
-bashio::log.info 'Starting Mealie 2...'
-
-for entry in "/opt/pysetup/.venv/lib/python3.9/site-packages/PIL"/*
-do
-  echo "$entry"
-done
+# Run the Mealie server
+bashio::log.info 'Starting Mealie...'
 
 
 cd /app || bashio::exit.nok

@@ -1,4 +1,5 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base-python:3.9-alpine3.13
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base-debian:stretch
+# ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base-python:3.9-alpine3.13
 ###############################################################################
 # Get prebuild containers from Mealie
 ###############################################################################
@@ -30,32 +31,83 @@ ENV PYTHONUNBUFFERED=1 \
 # prepend poetry and venv to path
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
-RUN apk --no-cache add shadow \
-    && apk --no-cache add --virtual .build-deps \
-        cmake \
-        curl \
-        g++ \
-        gcc \
-        jpeg-dev \
-        libffi-dev \
-        libjpeg \
-        make \
-        musl-dev \
-        musl \
-        postgresql-dev \
-        python3-dev \
-        tzdata \
-        zlib \
-        zlib-dev \
-        libc6-compat \
-        libc-dev \
-        alpine-sdk \
-        build-base \
-        linux-headers \
-        cython \
-        c-ares-dev \
-        gdbm \
-        libffi
+
+RUN apt update && apt install -y wget build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev
+
+RUN wget https://www.python.org/ftp/python/3.9.1/Python-3.9.1.tgz
+RUN tar -xf Python-3.9.1.tgz
+
+WORKDIR ./Python-3.9.1
+RUN ./configure --enable-optimizations
+RUN make -j 2
+
+RUN make altinstall
+
+RUN ln -s /usr/local/bin/python3.9 /usr/local/bin/python
+RUN ln -s /usr/local/bin/python3.9 /usr/local/bin/python3
+
+# RUN which python3.9
+# RUN which python3
+# RUN which python
+
+RUN  apt install -y debian-keyring debian-archive-keyring apt-transport-https \
+ && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | apt-key add - \
+    && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list \
+     && apt-get update \
+    && apt-get install --no-install-recommends -y \
+    caddy
+
+RUN mkdir /mem
+
+# RUN apk --no-cache add shadow \
+#         pcre-dev \
+#         libc-dev \
+#         linux-headers \
+#         python3-dev \
+#         nginx \
+#         curl \
+#         bash \
+#         gcc \
+#         g++ \
+#         uwsgi-python3 \
+#         # psycopg
+#         postgresql-dev \
+#         musl-dev \
+#         libffi-dev \
+#         freetype-dev \
+#         lcms2-dev \
+#         # PILLOW
+#         jpeg-dev \
+#         zlib-dev \
+#         # pylibmc
+#         libmemcached-dev \
+#         openjpeg-dev \
+#         jpeg \
+#         libjpeg \
+#         openjpeg \
+#         tiff-dev \
+#         tk-dev \
+#         tcl-dev \
+#         harfbuzz-dev \
+#         fribidi-dev \
+#         # opencv
+#         make \
+#         cmake \
+#         clang \
+#         clang-dev \
+#         ninja \
+#         # tesseract
+#         leptonica-dev \
+#         tesseract-ocr \
+#         tesseract-ocr-dev \
+#         openssh-server \
+#         gcc \
+#         musl-dev \
+#         zlib-dev \
+#         jpeg-dev
+
+
+# RUN addgroup -g 911 abc && adduser -u 911 -h $MEALIE_HOME -s /bin/bash -G abc && mkdir $MEALIE_HOME
 
 RUN useradd -u 911 -U -d $MEALIE_HOME -s /bin/bash abc \
     && usermod -G users abc \
@@ -71,6 +123,8 @@ RUN useradd -u 911 -U -d $MEALIE_HOME -s /bin/bash abc \
 
 # Mealie Production image
 ENV PRODUCTION=true
+
+# ENV DB_URL=/data/mealie.db
 # RUN echo "$PATH"
 
 # RUN poetry -V
@@ -97,6 +151,10 @@ WORKDIR $MEALIE_HOME
 RUN . $VENV_PATH/bin/activate && $POETRY_HOME/bin/poetry install
 WORKDIR /
 
+
+# RUN ln /app/data /data
+# RUN ln -s /app/data/mealie_v0.5.0.db /data/mealie.db
+
 # Copy root filesystem
 COPY rootfs /
 
@@ -108,6 +166,10 @@ ARG BUILD_NAME
 ARG BUILD_REF
 ARG BUILD_REPOSITORY
 ARG BUILD_VERSION
+
+
+
+# VOLUME [ "/app/data/" ]
 
 # Labels
 LABEL \
