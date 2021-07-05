@@ -29,12 +29,12 @@ ENV PYTHONUNBUFFERED=1 \
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
 # Add needed packages to run Mealie (eg usermod)
-RUN apk add build-base=0.5-r2 \
+RUN apk add --no-cache build-base=0.5-r2 \
     shadow=4.8.1-r0 \
     caddy=2.3.0-r0
 
 # Add poetry build deps
-RUN apk add freetype-dev=2.10.4-r1 \
+RUN apk add --no-cache freetype-dev=2.10.4-r1 \
     fribidi-dev=1.0.10-r0 \
     harfbuzz-dev=2.7.4-r1 \
     jpeg-dev=9d-r1 \
@@ -73,11 +73,10 @@ COPY --from=mealie $MEALIE_HOME $MEALIE_HOME
 
 WORKDIR $MEALIE_HOME
 RUN . $VENV_PATH/bin/activate \
-    && pip uninstall PIL \
     && $POETRY_HOME/bin/poetry install \
     # Reinstall pillow and uvloop, has system deps
-    && pip install --force-reinstall pillow \
-    && pip install --force-reinstall uvloop
+    && pip install --no-cache-dir --force-reinstall pillow==8.2.0 \
+    && pip install --no-cache-dir --force-reinstall uvloop==0.15.2
 
 WORKDIR /
 
