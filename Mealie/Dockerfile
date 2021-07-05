@@ -1,5 +1,5 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base-debian:stretch
-# ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base-python:3.9-alpine3.13
+# ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base-debian:stretch
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base-python:3.9-alpine3.13
 ###############################################################################
 # Get prebuild containers from Mealie
 ###############################################################################
@@ -26,38 +26,63 @@ ENV PYTHONUNBUFFERED=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1 \
     PYSETUP_PATH="/opt/pysetup" \
-    VENV_PATH="/opt/pysetup/.venv"
+    VENV_PATH="/opt/pysetup/.venv" \
+    CC=gcc
 
 # prepend poetry and venv to path
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
+RUN apk add build-base shadow
 
-RUN apt update && apt install -y wget build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev
+# Add poetry build deps
+RUN apk add freetype-dev \
+    fribidi-dev \
+    harfbuzz-dev \
+    jpeg-dev \
+    lcms2-dev \
+    openjpeg-dev \
+    tcl-dev \
+    tiff-dev \
+    tk-dev \
+    zlib-dev \
+    musl-dev \
+    libxml2-dev \
+    libxslt-dev \
+    gcc \
+    python3-dev \
+    libffi-dev \
+    openssl-dev \
+    cargo \
+    tzdata
 
-RUN wget https://www.python.org/ftp/python/3.9.1/Python-3.9.1.tgz
-RUN tar -xf Python-3.9.1.tgz
+# RUN apt update && apt install -y wget build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev
 
-WORKDIR ./Python-3.9.1
-RUN ./configure --enable-optimizations
-RUN make -j 2
+# RUN wget https://www.python.org/ftp/python/3.9.1/Python-3.9.1.tgz
+# RUN tar -xf Python-3.9.1.tgz
 
-RUN make altinstall
+# WORKDIR ./Python-3.9.1
+# RUN ./configure --enable-optimizations
+# RUN make -j 2
 
-RUN ln -s /usr/local/bin/python3.9 /usr/local/bin/python
-RUN ln -s /usr/local/bin/python3.9 /usr/local/bin/python3
+# RUN make altinstall
+
+# RUN ln -s /usr/local/bin/python3.9 /usr/local/bin/python
+# RUN ln -s /usr/local/bin/python3.9 /usr/local/bin/python3
 
 # RUN which python3.9
 # RUN which python3
 # RUN which python
 
-RUN  apt install -y debian-keyring debian-archive-keyring apt-transport-https \
- && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | apt-key add - \
-    && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list \
-     && apt-get update \
-    && apt-get install --no-install-recommends -y \
-    caddy
+RUN apk add caddy
 
-RUN mkdir /mem
+# RUN  apt install -y debian-keyring debian-archive-keyring apt-transport-https \
+#  && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | apt-key add - \
+#     && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list \
+#      && apt-get update \
+#     && apt-get install --no-install-recommends -y \
+#     caddy
+
+# RUN mkdir /mem
 
 # RUN apk --no-cache add shadow \
 #         pcre-dev \
@@ -107,11 +132,11 @@ RUN mkdir /mem
 #         jpeg-dev
 
 
-# RUN addgroup -g 911 abc && adduser -u 911 -h $MEALIE_HOME -s /bin/bash -G abc && mkdir $MEALIE_HOME
+RUN addgroup -g 911 abc && adduser -u 911 -h $MEALIE_HOME -s /bin/bash -G abc -D abc && mkdir -p $MEALIE_HOME
 
-RUN useradd -u 911 -U -d $MEALIE_HOME -s /bin/bash abc \
-    && usermod -G users abc \
-    && mkdir $MEALIE_HOME
+# RUN useradd -u 911 -U -d $MEALIE_HOME -s /bin/bash abc \
+#     && usermod -G users abc \
+#     && mkdir $MEALIE_HOME
 
 # create user account
 # RUN adduser -u 911 -D -h $MEALIE_HOME -s /bin/bash abc \
@@ -148,7 +173,7 @@ COPY --from=mealie $PYSETUP_PATH $PYSETUP_PATH
 COPY --from=mealie $MEALIE_HOME $MEALIE_HOME
 
 WORKDIR $MEALIE_HOME
-RUN . $VENV_PATH/bin/activate && $POETRY_HOME/bin/poetry install
+RUN . $VENV_PATH/bin/activate && pip uninstall PIL && $POETRY_HOME/bin/poetry install && pip install --force-reinstall pillow && pip install --force-reinstall uvloop
 WORKDIR /
 
 
