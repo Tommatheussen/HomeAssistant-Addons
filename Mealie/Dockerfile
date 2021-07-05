@@ -10,10 +10,6 @@ FROM $BUILD_FROM
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# COPY --from=mealie /app /app
-# COPY --from=mealie /opt/pysetup /opt/pysetup
-# COPY --from=mealie /opt/poetry /opt/poetry
-
 # Mealie base image
 ENV MEALIE_HOME="/app"
 
@@ -33,143 +29,44 @@ ENV PYTHONUNBUFFERED=1 \
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
 # Add needed packages to run Mealie (eg usermod)
-RUN apk add build-base \
-    shadow \
-    caddy
+RUN apk add build-base=0.5-r2 \
+    shadow=4.8.1-r0 \
+    caddy=2.3.0-r0
 
 # Add poetry build deps
-RUN apk add freetype-dev \
-    fribidi-dev \
-    harfbuzz-dev \
-    jpeg-dev \
-    lcms2-dev \
-    openjpeg-dev \
-    tcl-dev \
-    tiff-dev \
-    tk-dev \
-    zlib-dev \
-    musl-dev \
-    libxml2-dev \
-    libxslt-dev \
-    gcc \
-    python3-dev \
-    libffi-dev \
-    openssl-dev \
-    cargo \
-    tzdata
+RUN apk add freetype-dev=2.10.4-r1 \
+    fribidi-dev=1.0.10-r0 \
+    harfbuzz-dev=2.7.4-r1 \
+    jpeg-dev=9d-r1 \
+    lcms2-dev=2.11-r0 \
+    openjpeg-dev=2.4.0-r1 \
+    tcl-dev=8.6.10-r1 \
+    tiff-dev=4.2.0-r0 \
+    tk-dev=8.6.10-r1 \
+    zlib-dev=1.2.11-r3 \
+    musl-dev=1.2.2-r1 \
+    libxml2-dev=2.9.10-r7 \
+    libxslt-dev=1.1.34-r0 \
+    gcc=10.2.1_pre1-r3 	 \
+    python3-dev=3.8.10-r0 \
+    libffi-dev=3.3-r2 \
+    openssl-dev=1.1.1k-r0 \
+    cargo=1.47.0-r2 \
+    tzdata=2021a-r0
     # TODO: Configure TZ
 
-# RUN apt update && apt install -y wget build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev
 
-# RUN wget https://www.python.org/ftp/python/3.9.1/Python-3.9.1.tgz
-# RUN tar -xf Python-3.9.1.tgz
-
-# WORKDIR ./Python-3.9.1
-# RUN ./configure --enable-optimizations
-# RUN make -j 2
-
-# RUN make altinstall
-
-# RUN ln -s /usr/local/bin/python3.9 /usr/local/bin/python
-# RUN ln -s /usr/local/bin/python3.9 /usr/local/bin/python3
-
-# RUN which python3.9
-# RUN which python3
-# RUN which python
-
-# RUN  apt install -y debian-keyring debian-archive-keyring apt-transport-https \
-#  && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | apt-key add - \
-#     && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list \
-#      && apt-get update \
-#     && apt-get install --no-install-recommends -y \
-#     caddy
-
-# RUN mkdir /mem
-
-# RUN apk --no-cache add shadow \
-#         pcre-dev \
-#         libc-dev \
-#         linux-headers \
-#         python3-dev \
-#         nginx \
-#         curl \
-#         bash \
-#         gcc \
-#         g++ \
-#         uwsgi-python3 \
-#         # psycopg
-#         postgresql-dev \
-#         musl-dev \
-#         libffi-dev \
-#         freetype-dev \
-#         lcms2-dev \
-#         # PILLOW
-#         jpeg-dev \
-#         zlib-dev \
-#         # pylibmc
-#         libmemcached-dev \
-#         openjpeg-dev \
-#         jpeg \
-#         libjpeg \
-#         openjpeg \
-#         tiff-dev \
-#         tk-dev \
-#         tcl-dev \
-#         harfbuzz-dev \
-#         fribidi-dev \
-#         # opencv
-#         make \
-#         cmake \
-#         clang \
-#         clang-dev \
-#         ninja \
-#         # tesseract
-#         leptonica-dev \
-#         tesseract-ocr \
-#         tesseract-ocr-dev \
-#         openssh-server \
-#         gcc \
-#         musl-dev \
-#         zlib-dev \
-#         jpeg-dev
-
-
-RUN addgroup -g 911 abc && adduser -u 911 -h $MEALIE_HOME -s /bin/bash -G abc -D abc && mkdir -p $MEALIE_HOME
-
-# RUN useradd -u 911 -U -d $MEALIE_HOME -s /bin/bash abc \
-#     && usermod -G users abc \
-#     && mkdir $MEALIE_HOME
-
-# create user account
-# RUN adduser -u 911 -D -h $MEALIE_HOME -s /bin/bash abc \
-#     && addgroup abc users
-
-
-# ENV POETRY_VERSION=1.1.6
-# RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python -
+RUN addgroup -g 911 abc \
+    && adduser -u 911 -h $MEALIE_HOME -s /bin/bash -G abc -D abc \
+    && mkdir -p $MEALIE_HOME
 
 # Mealie Production image
 ENV PRODUCTION=true
-
-# ENV DB_URL=/data/mealie.db
-# RUN echo "$PATH"
-
-# RUN poetry -V
-
-# curl for used by healthcheck
-# RUN apt-get update \
-#     && apt-get install --no-install-recommends -y \
-#     curl \
-#     && apt-get autoremove \
-#     && rm -rf /var/lib/apt/lists/*
 
 
 # copying poetry and venv into image
 COPY --from=mealie $POETRY_HOME $POETRY_HOME
 COPY --from=mealie $PYSETUP_PATH $PYSETUP_PATH
-
-# copying caddy into image
-# COPY -- /usr/bin/caddy /usr/bin/caddy
 
 # copy backend
 COPY --from=mealie $MEALIE_HOME $MEALIE_HOME
@@ -184,10 +81,6 @@ RUN . $VENV_PATH/bin/activate \
 
 WORKDIR /
 
-
-# RUN ln /app/data /data
-# RUN ln -s /app/data/mealie_v0.5.0.db /data/mealie.db
-
 # Copy root filesystem
 COPY rootfs /
 
@@ -199,10 +92,6 @@ ARG BUILD_NAME
 ARG BUILD_REF
 ARG BUILD_REPOSITORY
 ARG BUILD_VERSION
-
-
-
-# VOLUME [ "/app/data/" ]
 
 # Labels
 LABEL \
