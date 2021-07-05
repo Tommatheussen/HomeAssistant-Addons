@@ -32,7 +32,10 @@ ENV PYTHONUNBUFFERED=1 \
 # prepend poetry and venv to path
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
-RUN apk add build-base shadow
+# Add needed packages to run Mealie (eg usermod)
+RUN apk add build-base \
+    shadow \
+    caddy
 
 # Add poetry build deps
 RUN apk add freetype-dev \
@@ -54,6 +57,7 @@ RUN apk add freetype-dev \
     openssl-dev \
     cargo \
     tzdata
+    # TODO: Configure TZ
 
 # RUN apt update && apt install -y wget build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev
 
@@ -72,8 +76,6 @@ RUN apk add freetype-dev \
 # RUN which python3.9
 # RUN which python3
 # RUN which python
-
-RUN apk add caddy
 
 # RUN  apt install -y debian-keyring debian-archive-keyring apt-transport-https \
 #  && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | apt-key add - \
@@ -173,7 +175,13 @@ COPY --from=mealie $PYSETUP_PATH $PYSETUP_PATH
 COPY --from=mealie $MEALIE_HOME $MEALIE_HOME
 
 WORKDIR $MEALIE_HOME
-RUN . $VENV_PATH/bin/activate && pip uninstall PIL && $POETRY_HOME/bin/poetry install && pip install --force-reinstall pillow && pip install --force-reinstall uvloop
+RUN . $VENV_PATH/bin/activate \
+    && pip uninstall PIL \
+    && $POETRY_HOME/bin/poetry install \
+    # Reinstall pillow and uvloop, has system deps
+    && pip install --force-reinstall pillow \
+    && pip install --force-reinstall uvloop
+
 WORKDIR /
 
 
