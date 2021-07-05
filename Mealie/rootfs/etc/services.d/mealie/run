@@ -6,7 +6,9 @@ mv /app/data /app/tmp_data
 mkdir -p /data/mealie
 ln -s /data/mealie /app/data
 
+
 # Move and override existing templates
+mkdir -p /app/data/templates/
 mv -f /app/tmp_data/templates/* /app/data/templates/
 
 rm -r /app/tmp_data
